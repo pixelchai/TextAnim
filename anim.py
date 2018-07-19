@@ -172,7 +172,7 @@ class player:
             n+=1
 
 
-    def drawScene(self,scene):
+    def drawScene(self,scene,box=1,pad=2):
         clear()
         scene=expandFormat(scene)
         lines=scene.splitlines()
@@ -187,12 +187,37 @@ class player:
         sy=th/2-h/2
 
         lineno=0
-        for line in lines:
+        print(colorama.Cursor.POS(sx,sy-1-pad/2))
+        above=''
+        above+=' '*(sx-pad)
+        below=above
+        above+='_'*(w+pad*2)
+        below+='-'*(w+pad*2)
+        print(above)
+        for i in range(h):
+            if i<len(lines):
+                line=lines[i]
+            else: line=''
+            linelen=len(rgx_ansi.sub('',line))
+
             print(colorama.Cursor.POS(sx,sy+lineno))
-            sys.stdout.write(' '*sx)
+            row=''
+            if box:
+                row+=' '*(sx-1-pad)
+            else:
+                row+=' '*(sx)
+            if box: row+='|'+' '*pad
+            row+=line
+            if box:
+                row+=' '*(w-linelen+pad)
+            else: row+=' '*(w-linelen)
+            if box: row+='|'
+            sys.stdout.write(row)
             sys.stdout.flush()
-            print(line)
+            # print(line)
             lineno+=1
+        print(colorama.Cursor.POS(sx,sy+h+pad/2))        
+        print(below)
 
         sleep(self.interval/1000.0)
 

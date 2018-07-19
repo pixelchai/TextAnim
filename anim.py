@@ -52,7 +52,6 @@ class player:
                 break
             else:
                 self.data=format(''.join(self.rawdata))
-                print 'no meta'
             self.loadMeta()
 
     def loadMeta(self): #todo: centre, density, etc
@@ -66,19 +65,48 @@ class player:
 
 
     def drawScene(self,scene):
+        clear()
         print ''.join(read(self.root+"/"+scene))
+        sleep(self.interval/1000.0)
+
+    def doScene(self,arg):
+        path=self.root+"/"+arg
+        if os.path.isfile(path):
+            self.drawScene(arg)
+        else:
+            for scene in [x for x in naturalSort(os.listdir(path))]:
+                self.drawScene(scene)
     
     def doLine(self,line):
-        pass
+        try:
+            left=rgx_command.findall(line)[0].strip().lower()
+        except:
+            left=line
+        right=line[len(left):].strip().lower()
+
+        if right != '':
+            #command
+            if left == 'w':
+                #wait command
+                val=0
+                if right.startswith(('+','-')):
+                    val=self.interval
+                val+=float(right)
+                sleep(val/1000.0)
+            #todo: more commands: transitions, etc
+        else:
+            #implicit command
+            self.doScene(left)
+
+
 
     def play(self):
+        clear()
         if self.defined:
             for line in self.data:
                 self.doLine(line)
         else:
             for scene in [x for x in naturalSort(os.listdir(anim_base+self.name)) if x!="data"]:
-                clear()
                 self.drawScene(scene)
-                sleep(self.interval/1000.0)
 
 player("test").play()

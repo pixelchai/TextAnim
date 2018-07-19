@@ -1,6 +1,14 @@
+from __future__ import print_function
+try:
+    import __builtin__
+except ImportError:
+    # Python 3
+    import builtins as __builtin__
 import os
 import re
+import colorama
 from time import sleep
+colorama.init()
 
 anim_base="anim/"
 rgx_meta = re.compile(r'^[\s\S]+---+')
@@ -24,6 +32,13 @@ def clear():
 
 def format(s):
         return filter(None,[x.strip() for x in rgx_comment.sub('',s).splitlines()])
+
+def print(s):
+    return __builtin__.print(s.format(
+        f=colorama.Fore,
+        b=colorama.Back,
+        c=colorama.Cursor,
+        s=colorama.Style))
 
 class player:
     def __init__(self, name,autoLoad=True):
@@ -66,7 +81,7 @@ class player:
 
     def drawScene(self,scene):
         clear()
-        print ''.join(read(self.root+"/"+scene))
+        print(''.join(read(self.root+"/"+scene)))
         sleep(self.interval/1000.0)
 
     def doScene(self,arg):

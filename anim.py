@@ -13,15 +13,11 @@ colorama.init()
 anim_base="anim/"
 rgx_meta = re.compile(r'^[\s\S]+---+')
 rgx_comment=re.compile(r'\/\*(\*(?!\/)|[^*])*\*\/|\/\/.+')
-rgx_command=re.compile(r'[a-zA-Z]+')
+rgx_command=re.compile(r'[a-zA-Z]+\/\w+|[a-zA-Z]+')
 
 def naturalSort(l):
     l.sort(key=lambda x:[(int(c) if c.isdigit() else c) for c in re.split('([0-9]+)', x)])
     return l
-
-# def load(name):
-#     if os.path.exists(anim_base+name):
-#         return [x for x in naturalSort(os.listdir(anim_base+name)) if x!="data"]
 
 def read(file):
     with(open(file,"r")) as f:
@@ -54,7 +50,6 @@ class player:
         if autoLoad:self.load()
 
     def load(self):
-        # self.scenes=load(self.name)
         if not os.path.exists(self.root):
             return
 
@@ -89,8 +84,8 @@ class player:
         if os.path.isfile(path):
             self.drawScene(arg)
         else:
-            for scene in [x for x in naturalSort(os.listdir(path))]:
-                self.drawScene(scene)
+            for s in [x for x in naturalSort(os.listdir(path))]:
+                self.drawScene(arg+"/"+s)
     
     def doLine(self,line):
         try:

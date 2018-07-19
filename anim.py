@@ -251,4 +251,4 @@ class player:
             for scene in [x for x in naturalSort(os.listdir(anim_base+self.name)) if x!="data"]:
                 self.drawScene(scene)
 
-player("test").play()
+player("ball").play()

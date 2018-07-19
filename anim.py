@@ -8,12 +8,14 @@ import os
 import re
 import colorama
 from time import sleep
+import sys
 colorama.init()
 
 anim_base="anim/"
 rgx_meta = re.compile(r'^[\s\S]+---+')
 rgx_comment=re.compile(r'\/\*(\*(?!\/)|[^*])*\*\/|\/\/.+')
 rgx_command=re.compile(r'[a-zA-Z]+\/\w+|[a-zA-Z]+')
+rgx_ansi = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 def getTerminalSize(defsize=(80,25)):
     import platform
@@ -107,16 +109,20 @@ def read(file):
 
 def clear():
     _=os.system('cls' if os.name == 'nt' else 'clear')
+    # print('\033[2J')
 
 def format(s):
         return filter(None,[x.strip() for x in rgx_comment.sub('',s).splitlines()])
 
 def print(s):
-    return __builtin__.print(str(s).format(
+    return __builtin__.print(expandFormat(s))
+
+def expandFormat(s):
+    return str(s).format(
         f=colorama.Fore,
         b=colorama.Back,
         c=colorama.Cursor,
-        s=colorama.Style))
+        s=colorama.Style)
 
 class player:
     def __init__(self, name,autoLoad=True):
@@ -158,16 +164,31 @@ class player:
 
     def drawScene(self,scene):
         clear()
-        print(''.join(read(self.root+"/"+scene)))
+        scene=expandFormat(scene)
+        lines=scene.splitlines()
+        w=len(max([rgx_ansi.sub('',x) for x in lines],key=len))
+        h=len(lines)
+        tw,th= getTerminalSize()
+        sx=tw/2-w/2
+        sy=th/2-h/2
+
+        lineno=0
+        for line in lines:
+            print(colorama.Cursor.POS(sx,sy+lineno))
+            sys.stdout.write(' '*sx)
+            sys.stdout.flush()
+            print(line)
+            lineno+=1
+
         sleep(self.interval/1000.0)
 
     def doScene(self,arg):
         path=self.root+"/"+arg
         if os.path.isfile(path):
-            self.drawScene(arg)
+            self.drawScene(''.join(read(path)))
         else:
             for s in [x for x in naturalSort(os.listdir(path))]:
-                self.drawScene(arg+"/"+s)
+                self.drawScene(''.join(read(path+"/"+s)))
     
     def doLine(self,line):
         try:
@@ -190,8 +211,6 @@ class player:
             #implicit command
             self.doScene(left)
 
-
-
     def play(self):
         clear()
         if self.defined:
@@ -200,5 +219,6 @@ class player:
         else:
             for scene in [x for x in naturalSort(os.listdir(anim_base+self.name)) if x!="data"]:
                 self.drawScene(scene)
-                
-# player("test").play()
+        print(colorama.Cursor.POS(*getTerminalSize()))
+
+player("test").play()

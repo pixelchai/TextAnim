@@ -172,7 +172,7 @@ class player:
             n+=1
 
 
-    def drawScene(self,scene,box=1,pad=2):
+    def drawScene(self,scene,box=0,pad=2):
         clear()
         scene=expandFormat(scene)
         lines=scene.splitlines()
@@ -186,39 +186,22 @@ class player:
         sx=tw/2-w/2
         sy=th/2-h/2
 
-        lineno=0
-        print(colorama.Cursor.POS(sx,sy-1-pad/2))
-        above=''
-        above+=' '*(sx-pad)
-        below=above
-        above+='_'*(w+pad*2)
-        below+='-'*(w+pad*2)
-        print(above)
-        for i in range(h):
-            if i<len(lines):
-                line=lines[i]
-            else: line=''
-            linelen=len(rgx_ansi.sub('',line))
+        if box:
+            bx=sx-pad
+            by=sy-pad
+            bw=w+pad*2
+            bh=w+pad*2
 
-            print(colorama.Cursor.POS(sx,sy+lineno))
-            row=''
-            if box:
-                row+=' '*(sx-1-pad)
-            else:
-                row+=' '*(sx)
-            if box: row+='|'+' '*pad
-            row+=line
-            if box:
-                row+=' '*(w-linelen+pad)
-            else: row+=' '*(w-linelen)
-            if box: row+='|'
-            sys.stdout.write(row)
-            sys.stdout.flush()
-            # print(line)
-            lineno+=1
-        print(colorama.Cursor.POS(sx,sy+h+pad/2))        
-        print(below)
+            sys.stdout.write(colorama.Cursor.POS(bx,by))
+            above='_'*bw
+            sys.stdout.write(above)
+            below='-'*bw
+        else:
+            for i in range(len(lines)):
+                sys.stdout.write(colorama.Cursor.POS(sx,sy+i)+lines[i])
 
+        sys.stdout.write(colorama.Cursor.POS(*getTerminalSize()))
+        sys.stdout.flush()
         sleep(self.interval/1000.0)
 
     def doScene(self,arg):
@@ -258,6 +241,5 @@ class player:
         else:
             for scene in [x for x in naturalSort(os.listdir(anim_base+self.name)) if x!="data"]:
                 self.drawScene(scene)
-        print(colorama.Cursor.POS(*getTerminalSize()))
 
 player("test").play()

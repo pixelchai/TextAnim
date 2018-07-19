@@ -172,7 +172,7 @@ class player:
             n+=1
 
 
-    def drawScene(self,scene,box=0,pad=2):
+    def drawScene(self,scene,box=1,pad=3):
         clear()
         scene=expandFormat(scene)
         lines=scene.splitlines()
@@ -188,17 +188,26 @@ class player:
 
         if box:
             bx=sx-pad
-            by=sy-pad
+            by=sy-pad/2-(1*pad%2)
             bw=w+pad*2
-            bh=w+pad*2
+            bh=h+pad*2/2
 
+            #above
             sys.stdout.write(colorama.Cursor.POS(bx,by))
-            above='_'*bw
-            sys.stdout.write(above)
-            below='-'*bw
-        else:
-            for i in range(len(lines)):
-                sys.stdout.write(colorama.Cursor.POS(sx,sy+i)+lines[i])
+            sys.stdout.write('-'*bw)
+            
+            for i in range(1,bh-1):
+                sys.stdout.write(colorama.Cursor.POS(bx,by+i))
+                s='|'+' '*(bw-2)+'|'
+                sys.stdout.write(s)
+            
+            #below
+            sys.stdout.write(colorama.Cursor.POS(bx,by+bh-1))
+            sys.stdout.write('-'*bw)
+            
+        
+        for i in range(len(lines)):
+            sys.stdout.write(colorama.Cursor.POS(sx,sy+i)+lines[i])
 
         sys.stdout.write(colorama.Cursor.POS(*getTerminalSize()))
         sys.stdout.flush()

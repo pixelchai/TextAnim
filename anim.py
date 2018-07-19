@@ -15,6 +15,7 @@ anim_base="anim/"
 rgx_meta = re.compile(r'^[\s\S]+---+')
 rgx_comment=re.compile(r'\/\*(\*(?!\/)|[^*])*\*\/|\/\/.+')
 rgx_command=re.compile(r'[a-zA-Z]+\/\w+|[a-zA-Z]+')
+rgx_word=re.compile(r'\w+')
 rgx_ansi = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 def getTerminalSize(defsize=(80,25)):
@@ -130,10 +131,12 @@ class player:
         self.root=anim_base+name
 
         #defaults
-        self.interval=600
+        self.interval=600.0
         self.defined=False
         self.metadata=[]
         self.data=[]
+        self.width=0
+        self.height=0
 
         if autoLoad:self.load()
 
@@ -159,15 +162,26 @@ class player:
                 break
             else:
                 if n==0:
-                    self.interval=int(line)
+                    #interval
+                    self.interval=float(line)
+                elif n==1:
+                    #width height
+                    words=rgx_word.findall(line)
+                    self.width=int(words[0])
+                    self.height=int(words[1])
+            n+=1
 
 
     def drawScene(self,scene):
         clear()
         scene=expandFormat(scene)
         lines=scene.splitlines()
-        w=len(max([rgx_ansi.sub('',x) for x in lines],key=len))
-        h=len(lines)
+        if self.width*self.height<=0:
+            w=len(max([rgx_ansi.sub('',x) for x in lines],key=len))
+            h=len(lines)
+        else:
+            w=self.width
+            h=self.height
         tw,th= getTerminalSize()
         sx=tw/2-w/2
         sy=th/2-h/2
